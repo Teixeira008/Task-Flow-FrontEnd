@@ -18,12 +18,12 @@ export default function Home() {
 
   return (
     <main className="min-h-screen flex justify-center bg-gray-100 p-6">
-      <AddTaskForm onCreate={handleCreate} />
       <div className="w-full max-w-md bg-white rounded-xl shadow p-6">
         <h1 className="text-2xl font-bold mb-4 text-center">
           TaskFlow
         </h1>
-
+        <AddTaskForm onCreate={handleCreate} />
+        
         {/* Formulário */}
         
         {loading && (
