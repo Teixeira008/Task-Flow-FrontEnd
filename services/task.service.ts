@@ -5,18 +5,37 @@ import { getFromStorage, saveToStorage } from "@/lib/storage"
 
 let tasks: Task[] = getFromStorage() ?? [...mockTasks]
 
+const STORAGE_KEY = "taskflow:tasks"
+
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+// entender o getStoredtasks, função para ler
+function getStoredTasks() {
+  const stored = localStorage.getItem(STORAGE_KEY)
+
+  if (!stored) {
+    return mockTasks
+  }
+
+  return JSON.parse(stored)
+}
+
+// entender o savetasks 
+function saveTasks(tasks: Task[]) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks))
+}
+
 export async function getTasks(): Promise<Task[]> {
   await delay(500)
-  return tasks
+  return getStoredTasks()
 }
 
 export async function createTask(title: string): Promise<Task> {
   await delay(500)
-
+  
+  const tasks = getStoredTasks()
   const newTask: Task = {
     id: crypto.randomUUID(),
     title,
@@ -24,8 +43,10 @@ export async function createTask(title: string): Promise<Task> {
     createdAt: Date.now(),
   }
 
-  tasks.unshift(newTask)
-  saveToStorage(tasks)
+  const updatedTasks = [...tasks, newTask]
+
+  saveTask(updatedTasks)
+
   return newTask
 }
 
