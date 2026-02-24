@@ -45,9 +45,23 @@ export async function createTask(title: string): Promise<Task> {
 
   const updatedTasks = [...tasks, newTask]
 
-  saveTask(updatedTasks)
+  saveTasks(updatedTasks)
 
   return newTask
+}
+
+export async function updateTask(id: string, title: string): Promise<void> {
+  const tasks = getStoredTasks()
+  
+  const updatedTasks = tasks.map(task =>
+    task.id === id
+      ? { ...task, completed: !task.completed }
+      : task
+  )
+  saveTasks(updatedTasks)
+  const taskToUpdate = tasks.find(task => task.id === id)
+  return updateTask 
+
 }
 
 export async function toggleTask(id: string): Promise<void> {
@@ -61,7 +75,7 @@ export async function toggleTask(id: string): Promise<void> {
 
 export async function deleteTask(id: string): Promise<void> {
   await delay(500)
-
-  tasks = tasks.filter((task) => task.id !== id)
-  saveToStorage(tasks)
-} 
+  const tasks = getStoredTasks()
+  const updatedTasks = tasks.filter((task: { id: string }) => task.id !== id)
+  saveTasks(updatedTasks)
+}
