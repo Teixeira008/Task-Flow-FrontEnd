@@ -53,14 +53,14 @@ export async function createTask(title: string): Promise<Task> {
 export async function updateTask(id: string, title: string): Promise<void> {
   const tasks = getStoredTasks()
   
-  const updatedTasks = tasks.map(task =>
+  const updatedTasks = tasks.map((task: Task) =>
     task.id === id
       ? { ...task, completed: !task.completed }
       : task
   )
   saveTasks(updatedTasks)
-  const taskToUpdate = tasks.find(task => task.id === id)
-  return updateTask 
+  const updatedTask = updatedTasks.find((task: Task) => task.id === id)
+  return updatedTasks
 
 }
 
