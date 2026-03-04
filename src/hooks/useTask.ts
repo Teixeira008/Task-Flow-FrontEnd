@@ -1,13 +1,13 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Task } from "@/types/task"
+import { Task } from "@/so-para-teste/src/types/task"
 import {
   getTasks,
   createTask,
   toggleTask,
   deleteTask,
-} from "@/services/task.service"
+} from "@/so-para-teste/src/services/task.service"
 
 export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([])

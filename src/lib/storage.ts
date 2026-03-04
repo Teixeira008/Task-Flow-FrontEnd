@@ -1,4 +1,4 @@
-import { Task } from "@/types/task"
+import { Task } from "@/so-para-teste/src/types/task"
 
 const STORAGE_KEY = "taskflow_tasks"
 

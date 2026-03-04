@@ -1,6 +1,6 @@
 "use client"
 
-import { Task } from "@/types/task"
+import { Task } from "@/so-para-teste/src/types/task"
 import { TaskItem } from "./TaskItem"
 
 type Props = {
