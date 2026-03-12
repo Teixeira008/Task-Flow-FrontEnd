@@ -1,6 +1,6 @@
 "use client"
 
-import { Task } from "@/so-para-teste/src/types/task"
+import { Task } from "@/types/task"
 
 type Props = {
   task: Task
