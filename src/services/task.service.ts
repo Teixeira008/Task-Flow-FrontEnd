@@ -42,17 +42,15 @@ export async function createTask(title: string, userId: string): Promise<Task> {
   return newTask
 }
 
-export async function updateTask(id: string, userId: string, title: string): Promise<void> {
+
+
+export async function updateTask(id: string, userId: string, changes: Partial<Task>): Promise<void> {
+  await delay(500)
   const tasks = getStoredTasks(userId)
-  
-  const updatedTasks = tasks.map((task: Task) =>
-    task.id === id
-      ? { ...task, completed: !task.completed }
-      : task
+  const updatedTasks = tasks.map((task) =>
+    task.id === id ? { ...task, ...changes } : task
   )
   saveTasks(updatedTasks, userId)
-
-  
 }
 
 export async function toggleTask(id: string, userId: string): Promise<void> {

@@ -2,26 +2,23 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/hooks/useAuth"
+import { recoverPassword } from "@/services/auth.service"
 
-export default function LoginPage() {
-  const router = useRouter()
-  const { handleLogin } = useAuth()
-
+export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [password, setPassword] = useState<string | null>(null)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError("")
+    setPassword(null)
     setLoading(true)
 
     try {
-      await handleLogin(email, password)
-      router.push("/")
+      const found = await recoverPassword(email)
+      setPassword(found)
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message)
@@ -49,28 +46,32 @@ export default function LoginPage() {
             Task<span className="text-violet-400">Flow</span>
           </span>
           <p className="mt-2 text-sm text-zinc-400">
-            Entre na sua conta para continuar
+            Recuperar senha
           </p>
         </div>
 
         {/* Card */}
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 backdrop-blur p-6 shadow-xl">
 
+          {/* Erro */}
           {error && (
             <div className="mb-4 rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
               {error}
             </div>
           )}
 
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="text-center mt-2">
-              <Link
-                href="/forgot-password"
-                className="text-xs text-zinc-400 hover:text-violet-400 transition-colors"
-              >
-                Esqueceu a senha?
-              </Link>
+          {/* Senha encontrada */}
+          {password && (
+            <div className="mb-4 rounded-lg bg-violet-500/10 border border-violet-500/20 px-4 py-3">
+              <p className="text-xs text-violet-400 mb-1">Sua senha é:</p>
+              <p className="text-sm font-mono font-semibold text-white">{password}</p>
+              <p className="text-xs text-zinc-500 mt-2">
+                🔒 Em produção, um email seria enviado. Isso é só um mock!
+              </p>
             </div>
+          )}
+
+          <form onSubmit={onSubmit} className="space-y-4">
             <div className="space-y-1">
               <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
                 Email
@@ -85,39 +86,24 @@ export default function LoginPage() {
               />
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
-                Senha
-              </label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full rounded-xl bg-zinc-800 border border-zinc-700 px-4 py-3 text-sm text-white placeholder-zinc-500 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition"
-              />
-            </div>
-
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-3 text-sm font-semibold text-white transition-colors mt-2"
+              className="w-full rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-3 text-sm font-semibold text-white transition-colors"
             >
-              {loading ? "Entrando..." : "Entrar"}
+              {loading ? "Buscando..." : "Recuperar senha"}
             </button>
-
           </form>
         </div>
 
-        {/* Link para register */}
+        {/* Link para login */}
         <p className="mt-6 text-center text-sm text-zinc-500">
-          Ainda não tem conta?{" "}
+          Lembrou a senha?{" "}
           <Link
-            href="/register"
+            href="/login"
             className="text-violet-400 hover:text-violet-300 font-medium transition-colors"
           >
-            Criar conta
+            Voltar ao login
           </Link>
         </p>
 

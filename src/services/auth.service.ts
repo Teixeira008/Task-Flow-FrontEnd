@@ -71,6 +71,16 @@ export async function login(
   return session
 }
 
+export async function recoverPassword(email: string): Promise<string> {
+  const users = getUsers()
+
+  const user = users.find((u) => u.email === email)
+
+  if (!user) throw new Error("Email não encontrado")
+
+  return user.passwordHash  // ← no mock, retorna a senha direto
+}
+
 export function logout() {
   localStorage.removeItem(SESSION_KEY)
 }

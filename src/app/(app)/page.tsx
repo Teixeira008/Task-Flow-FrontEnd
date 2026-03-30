@@ -6,12 +6,19 @@ import { useTasks } from "@/hooks/useTask"
 import { useAuth } from "@/hooks/useAuth"
 import { useTheme } from "@/hooks/useTheme"
 import { TaskList } from "@/components/tasks/TaskList"
-import { Task } from "@/types/task"
+import { Task, Priority } from "@/types/task"
+
+// 🧠 Lookup table — padrão que você mesmo sugeriu!
+const priorityConfig = {
+  red:    { label: "Alta",  color: "bg-red-500",    border: "border-red-500"    },
+  yellow: { label: "Média", color: "bg-yellow-500", border: "border-yellow-500" },
+  green:  { label: "Baixa", color: "bg-green-500",  border: "border-green-500"  },
+}
 
 export default function Home() {
   const router = useRouter()
   const { session, loading: authLoading, handleLogout } = useAuth()
-  const { tasks, loading, handleCreate, handleToggle, handleDelete } = useTasks(
+  const { tasks, loading, handleCreate, handleToggle, handleDelete, handleUpdate } = useTasks(
     session?.user.id ?? ""
   )
   const { theme, toggleTheme } = useTheme()
@@ -28,7 +35,6 @@ export default function Home() {
   if (authLoading) return null
   if (!session) return null
 
-  // 🧠 Conta as tasks concluídas filtrando pelo completed = true
   const completedCount = tasks.filter((t) => t.completed).length
 
   async function handleSubmit(e: React.FormEvent) {
@@ -36,6 +42,13 @@ export default function Home() {
     if (!input.trim()) return
     await handleCreate(input.trim())
     setInput("")
+  }
+
+  // 🧠 Atualiza a task E sincroniza o modal para refletir a mudança imediatamente
+  async function handleUpdateSelected(changes: Partial<Task>) {
+    if (!selectedTask) return
+    await handleUpdate(selectedTask.id, changes)
+    setSelectedTask((prev) => prev ? { ...prev, ...changes } : null)
   }
 
   return (
@@ -54,8 +67,6 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-3">
-
-            {/* Toggle de tema */}
             <button
               onClick={toggleTheme}
               className="relative w-10 h-6 rounded-full bg-zinc-300 dark:bg-zinc-700 transition-colors"
@@ -136,26 +147,101 @@ export default function Home() {
           />
         )}
 
-        {/* 🧠 Modal de detalhe — próximo passo! */}
+        {/* Modal de detalhe */}
         {selectedTask && (
           <div
             className="fixed inset-0 bg-black/50 flex items-end justify-center z-50 p-4"
             onClick={() => setSelectedTask(null)}
           >
             <div
-              className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-2xl p-6"
+              className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-2xl p-6 space-y-5"
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="text-lg font-semibold text-zinc-800 dark:text-white mb-2">
-                {selectedTask.title}
-              </h2>
-              <p className="text-sm text-zinc-400">
-                Criada em{" "}
-                {new Date(selectedTask.createdAt).toLocaleDateString("pt-BR")}
-              </p>
-              <p className="text-xs text-zinc-300 dark:text-zinc-600 mt-4 text-center">
-                Em breve: prioridade, data de entrega e mais...
-              </p>
+
+              {/* Título + data de criação */}
+              <div>
+                <h2 className="text-lg font-semibold text-zinc-800 dark:text-white">
+                  {selectedTask.title}
+                </h2>
+                <p className="text-xs text-zinc-400 mt-1">
+                  Criada em{" "}
+                  {new Date(selectedTask.createdAt).toLocaleDateString("pt-BR")}
+                </p>
+              </div>
+
+              {/* Prioridade */}
+              <div>
+                <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-2">
+                  Prioridade
+                </p>
+                <div className="flex gap-2">
+                  {(Object.keys(priorityConfig) as Priority[]).map((key) => (
+                    <button
+                      key={key}
+                      onClick={() => handleUpdateSelected({ priority: key })}
+                      className={`
+                        flex-1 py-2 rounded-xl text-xs font-medium border-2 transition-all
+                        ${selectedTask.priority === key
+                          ? `${priorityConfig[key].color} text-white border-transparent`
+                          : "bg-transparent text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:border-zinc-400"
+                        }
+                      `}
+                    >
+                      {priorityConfig[key].label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Data de entrega */}
+              <div>
+                <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-2">
+                  Data de entrega
+                </p>
+                <input
+                  type="date"
+                  value={
+                    selectedTask.dueDate
+                      ? new Date(selectedTask.dueDate).toISOString().split("T")[0]
+                      : ""
+                  }
+                  onChange={(e) => {
+                    // 🧠 converte "yyyy-MM-dd" → timestamp para salvar
+                    const timestamp = e.target.value
+                      ? new Date(e.target.value).getTime()
+                      : undefined
+                    handleUpdateSelected({ dueDate: timestamp })
+                  }}
+                  className="
+                    w-full bg-zinc-100 dark:bg-zinc-800
+                    border border-zinc-200 dark:border-zinc-700
+                    rounded-xl px-4 py-2.5 text-sm
+                    text-zinc-800 dark:text-zinc-100
+                    outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500
+                    transition
+                  "
+                />
+              </div>
+
+              {/* Ações */}
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={() => {
+                    handleDelete(selectedTask.id)
+                    setSelectedTask(null)
+                  }}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-medium text-red-500 border border-red-200 dark:border-red-500/30 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                >
+                  Deletar
+                </button>
+                <button
+                  onClick={() => setSelectedTask(null)}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-medium text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+                >
+                  Fechar
+                </button>
+              </div>
+
             </div>
           </div>
         )}

@@ -7,6 +7,7 @@ import {
   createTask,
   toggleTask,
   deleteTask,
+  updateTask,
 } from "@/services/task.service"
 
 export function useTasks( userId: string) {
@@ -38,6 +39,17 @@ export function useTasks( userId: string) {
     )
   }
 
+ async function handleUpdate(id: string, changes: Partial<Task>) {
+  await updateTask(id, userId, changes)
+  setTasks((prev) =>
+    prev.map((task) =>
+      task.id === id ? { ...task, ...changes } : task
+    )
+  )
+}
+
+
+
   async function handleDelete(id: string) {
     await deleteTask(id, userId)
     setTasks((prev) => prev.filter((task) => task.id !== id))
@@ -50,5 +62,6 @@ export function useTasks( userId: string) {
     handleCreate,
     handleToggle,
     handleDelete,
+    handleUpdate,
   }
 }
