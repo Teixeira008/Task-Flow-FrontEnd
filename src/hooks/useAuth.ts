@@ -20,6 +20,7 @@ export function useAuth() {
   async function handleLogin(email: string, password: string) {
     const session = await login(email, password)
     setSession(session)
+    return session
   }
 
   async function handleRegister(name: string, email: string, password: string) {

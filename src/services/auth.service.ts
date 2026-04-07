@@ -6,12 +6,28 @@ import { User, Session } from "@/types/user"
 const USERS_KEY = "taskflow:users"
 const SESSION_KEY = "taskflow:session"
 
-function getUsers(): User[] {
+export function getUsers(): User[] {
   const stored = localStorage.getItem(USERS_KEY)
   return stored ? JSON.parse(stored) : []
 }
 
-function saveUsers(users: User[]) {
+const ADMIN_USER: User = {
+  id: "admin-001",
+  name: "Admin",
+  email: "admin@taskflow.com",
+  passwordHash: "admin123",
+  role: "admin",
+}
+
+export function seedAdmin() {
+  const users = getUsers()
+  const exists = users.find((u) => u.role === "admin")
+  if (!exists) {
+    saveUsers([...users, ADMIN_USER])
+  }
+}
+
+export function saveUsers(users: User[]) {
   localStorage.setItem(USERS_KEY, JSON.stringify(users))
 }
 
@@ -37,13 +53,14 @@ export async function register(
     name,
     email,
     passwordHash: password, // mock: em prod usaria bcrypt
+    role: "user" // default role
   }
 
   saveUsers([...users, newUser])
 
   const session: Session = {
     token: generateFakeToken(),
-    user: { id: newUser.id, name: newUser.name, email: newUser.email },
+    user: { id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role },
   }
 
   localStorage.setItem(SESSION_KEY, JSON.stringify(session))
@@ -64,7 +81,7 @@ export async function login(
 
   const session: Session = {
     token: generateFakeToken(),
-    user: { id: user.id, name: user.name, email: user.email },
+    user: { id: user.id, name: user.name, email: user.email, role: user.role },
   }
 
   localStorage.setItem(SESSION_KEY, JSON.stringify(session))

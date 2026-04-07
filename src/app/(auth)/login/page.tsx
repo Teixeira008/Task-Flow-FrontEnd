@@ -20,8 +20,8 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      await handleLogin(email, password)
-      router.push("/")
+      const session = await handleLogin(email, password)
+      router.push(session.user.role === "admin" ? "/dashboard" : "/")
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message)
